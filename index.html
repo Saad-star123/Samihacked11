@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>স্যামি প্র্যাঙ্ক - হ্যাকড বাই সাদ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Bengali', 'Segoe UI', system-ui, sans-serif;
+            background: #000;
+            color: #0f0;
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #camera-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+            background: #000;
+        }
+
+        #camera-feed {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(100%) contrast(150%) brightness(50%);
+            opacity: 0.8;
+        }
+
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            background: transparent;
+            pointer-events: none;
+        }
+
+        .scary-text {
+            position: absolute;
+            color: #ff0000;
+            text-shadow: 
+                0 0 10px #f00,
+                0 0 20px #f00,
+                2px 2px 2px #000;
+            font-family: 'Courier New', monospace;
+            font-weight: 900;
+            text-transform: uppercase;
+            transform: rotate(var(--rot));
+            font-size: clamp(16px, 5vw, 32px);
+            white-space: nowrap;
+            animation: blink 0.5s infinite;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        .bangla-text {
+            font-family: 'Bengali', 'Hind Siliguri', sans-serif;
+            font-size: clamp(20px, 6vw, 40px);
+            color: #ff0;
+            text-shadow: 
+                0 0 15px #f00,
+                0 0 30px #f00,
+                3px 3px 0 #000;
+            position: absolute;
+            white-space: nowrap;
+            font-weight: bold;
+            animation: shake 0.1s infinite;
+            direction: rtl;
+        }
+
+        #time-display {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            color: #0ff;
+            font-family: 'Digital', monospace;
+            font-size: 24px;
+            text-shadow: 0 0 10px #0ff;
+            z-index: 100;
+            background: rgba(0,0,0,0.7);
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: 2px solid #0ff;
+            pointer-events: none;
+            animation: glow 1s infinite;
+        }
+
+        #hacked-text {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #f00;
+            font-size: clamp(30px, 10vw, 80px);
+            font-weight: 900;
+            text-shadow: 
+                0 0 20px #f00,
+                0 0 40px #f00,
+                5px 5px 0 #000;
+            z-index: 50;
+            white-space: nowrap;
+            animation: pulse 0.3s infinite;
+            opacity: 0.9;
+            pointer-events: none;
+            text-align: center;
+            width: 100%;
+            font-family: 'Impact', 'Courier New', monospace;
+        }
+
+        #subtitle {
+            position: fixed;
+            bottom: 100px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: #fff;
+            font-size: 24px;
+            z-index: 50;
+            text-shadow: 2px 2px 0 #f00;
+            background: linear-gradient(90deg, transparent, rgba(255,0,0,0.3), transparent);
+            padding: 20px;
+            font-family: 'Bengali', sans-serif;
+            animation: slide 2s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(5px, 5px) rotate(2deg); }
+            75% { transform: translate(-5px, -5px) rotate(-2deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px #0ff; }
+            50% { box-shadow: 0 0 50px #0ff; }
+        }
+
+        @keyframes slide {
+            0%, 100% { transform: translateX(-100%); opacity: 0; }
+            50% { transform: translateX(0); opacity: 1; }
+        }
+
+        .touch-effect {
+            position: absolute;
+            color: #f00;
+            font-size: 24px;
+            font-weight: bold;
+            pointer-events: none;
+            z-index: 999;
+            animation: fadeUp 1s forwards;
+            white-space: nowrap;
+            font-family: 'Courier New', monospace;
+        }
+
+        @keyframes fadeUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-100px) scale(2); }
+        }
+
+        #forid-text {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            color: #ff0;
+            font-size: 18px;
+            z-index: 100;
+            background: rgba(255,0,0,0.3);
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 5px solid #f00;
+            font-family: 'Bengali', sans-serif;
+        }
+
+        #rotna-text {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            color: #0ff;
+            font-size: 18px;
+            z-index: 100;
+            background: rgba(0,255,255,0.3);
+            padding: 10px;
+            border-radius: 5px;
+            border-right: 5px solid #0ff;
+            font-family: 'Bengali', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div id="camera-container">
+        <video id="camera-feed" autoplay playsinline></video>
+    </div>
+
+    <div id="overlay"></div>
+    
+    <div id="time-display">--:--:--</div>
+    <div id="hacked-text">🔥 HACKED BY SAAD 🔥</div>
+    <div id="subtitle"></div>
+    
+    <div id="forid-text">👨 FORID MIA - বাপের নাম</div>
+    <div id="rotna-text">👩 ROTNA AKTER - মায়ের নাম</div>
+
+    <!-- Audio elements -->
+    <audio id="hacking-sound" loop>
+        <source src="https://image2url.com/r2/default/audio/1773661161994-731b4d3a-a5ee-442d-b9f1-bcc6c67f52af.mp3" type="audio/mpeg">
+    </audio>
+
+    <audio id="touch-sound" preload="auto">
+        <source src="https://image2url.com/r2/default/audio/1773661161994-731b4d3a-a5ee-442d-b9f1-bcc6c67f52af.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // গোপন ছবি এবং বার্তা সংরক্ষণ
+        const secretImages = [
+            'https://image2url.com/r2/default/images/1773659528671-015c1ddc-bd44-41cb-8833-14c198fa89cb.jpg',
+            'https://image2url.com/r2/default/images/1773659570935-e3bdf60f-1fe3-457c-b32f-90acc8d8de55.png',
+            'https://image2url.com/r2/default/images/1773659656611-bbf2f210-ff5b-4cfe-b555-4f578e9db273.png',
+            'https://image2url.com/r2/default/images/1773659707442-f0d164f9-9b45-45d7-89d7-20b7b6be823b.png',
+            'https://image2url.com/r2/default/images/1773660447742-79c1c8a1-2ec2-4519-bdbe-fa62fda450eb.png'
+        ];
+
+        const slangMessages = [
+            '🔴 সালা/কি!! তোর বাপের নাম ফরিদ মিয়া!',
+            '⚡ তর মায়ের নাম রত্না আক্তার! খবরদার!',
+            '💀 নিসা তর ক্রাশ! আমি সব জানি!',
+            '👁️ তরে ফান্দে ফেলাইছি রে পোলা!',
+            '🔥 আইজ তর লগ হ্যাক করমু!',
+            '😈 তুই কে? আমি সাদ! হ্যাকার!',
+            '🎯 তর সব ইনফরমেশন আমার কাছে!',
+            '⚔️ তুই ফাঁদে পরিছস!',
+            '💢 নিসা নিসা নিসা! তর নিসা!',
+            '🔪 আইজ তরে ছাইড়া দিমু না!',
+            '👽 আমি তর ফোনে চইলা গেসি!',
+            '💣 তোর ডিভাইস ব্লাস্ট!',
+            '⚠️ সতর্ক! এইডা সাদর ফাঁদ!',
+            '🚨 পুলিশও তরে বাঁচাইতে পারবো না!',
+            '💀 ডেথ ইজ কামিং ফর ইউ!'
+        ];
+
+        // এলোমেলো স্ল্যাং বার্তা
+        function getRandomSlang() {
+            return slangMessages[Math.floor(Math.random() * slangMessages.length)];
+        }
+
+        // এলোমেলো অবস্থান
+        function getRandomPosition() {
+            return {
+                x: Math.random() * window.innerWidth,
+                y: Math.random() * window.innerHeight
+            };
+        }
+
+        // এলোমেলো ঘূর্ণন
+        function getRandomRotation() {
+            return (Math.random() * 40 - 20) + 'deg';
+        }
+
+        // স্ক্যারি টেক্সট তৈরি
+        function createScaryText(text, x, y) {
+            const div = document.createElement('div');
+            div.className = 'scary-text';
+            div.textContent = text;
+            div.style.left = x + 'px';
+            div.style.top = y + 'px';
+            div.style.setProperty('--rot', getRandomRotation());
+            div.style.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+            document.body.appendChild(div);
+
+            // 2 সেকেন্ড পর মুছে ফেল
+            setTimeout(() => {
+                div.remove();
+            }, 2000);
+        }
+
+        // টাচ ইফেক্ট
+        function createTouchEffect(x, y) {
+            const div = document.createElement('div');
+            div.className = 'touch-effect';
+            div.textContent = '🔥 HACKED 🔥';
+            div.style.left = x + 'px';
+            div.style.top = y + 'px';
+            div.style.color = '#f00';
+            document.body.appendChild(div);
+
+            setTimeout(() => {
+                div.remove();
+            }, 1000);
+        }
+
+        // গোপন ছবি দেখান
+        function showSecretImage() {
+            const imgIndex = Math.floor(Math.random() * secretImages.length);
+            const imgUrl = secretImages[imgIndex];
+            
+            const img = document.createElement('img');
+            img.src = imgUrl;
+            img.style.position = 'fixed';
+            img.style.maxWidth = '80%';
+            img.style.maxHeight = '80%';
+            img.style.left = '10%';
+            img.style.top = '10%';
+            img.style.zIndex = '200';
+            img.style.border = '5px solid red';
+            img.style.boxShadow = '0 0 50px red';
+            img.style.animation = 'pulse 0.5s infinite';
+            img.style.pointerEvents = 'none';
+            
+            document.body.appendChild(img);
+            
+            // 3 সেকেন্ড পর মুছে ফেল
+            setTimeout(() => {
+                img.remove();
+            }, 3000);
+        }
+
+        // সময় আপডেট
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('bn-BD', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            });
+            document.getElementById('time-display').textContent = timeString;
+        }
+
+        // সাবটাইটেল আপডেট
+        function updateSubtitle() {
+            const subtitle = document.getElementById('subtitle');
+            subtitle.textContent = getRandomSlang();
+            
+            // এলোমেলো স্ল্যাং বার্তা
+            setInterval(() => {
+                subtitle.textContent = getRandomSlang();
+            }, 2000);
+        }
+
+        // ক্যামেরা চালু
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'user',
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
+                    }, 
+                    audio: false 
+                });
+                const video = document.getElementById('camera-feed');
+                video.srcObject = stream;
+            } catch (err) {
+                console.error('ক্যামেরা চালু করা যায়নি:', err);
+                // ক্যামেরা না পেলে ব্যাকগ্রাউন্ড কালো রাখবো
+            }
+        }
+
+        // টাচ ইভেন্ট হ্যান্ডলার
+        function handleTouch(event) {
+            event.preventDefault();
+            
+            const touch = event.touches[0];
+            const x = touch.clientX;
+            const y = touch.clientY;
+
+            // টাচ সাউন্ড বাজাও
+            const touchSound = document.getElementById('touch-sound');
+            touchSound.currentTime = 0;
+            touchSound.play().catch(e => console.log('সাউন্ড বাজানো যায়নি:', e));
+
+            // টাচ ইফেক্ট
+            createTouchEffect(x, y);
+
+            // স্ক্যারি টেক্সট
+            createScaryText('🔥 HACKED 🔥', x, y - 50);
+            createScaryText('⚠️ সতর্ক ⚠️', x + 50, y + 30);
+            createScaryText('👁️ নিসা 👁️', x - 50, y + 50);
+
+            // এলোমেলো স্ল্যাং বার্তা
+            if (Math.random() > 0.7) {
+                const slangDiv = document.createElement('div');
+                slangDiv.className = 'bangla-text';
+                slangDiv.textContent = getRandomSlang();
+                slangDiv.style.left = (x - 100) + 'px';
+                slangDiv.style.top = (y - 100) + 'px';
+                document.body.appendChild(slangDiv);
+                
+                setTimeout(() => {
+                    slangDiv.remove();
+                }, 1500);
+            }
+
+            // এলোমেলো ছবি দেখান
+            if (Math.random() > 0.8) {
+                showSecretImage();
+            }
+
+            // নিসা নাম দেখান
+            if (Math.random() > 0.6) {
+                const nisaDiv = document.createElement('div');
+                nisaDiv.className = 'bangla-text';
+                nisaDiv.textContent = '😈 নিসা 😈';
+                nisaDiv.style.color = '#f0f';
+                nisaDiv.style.left = (x - 150) + 'px';
+                nisaDiv.style.top = (y - 150) + 'px';
+                nisaDiv.style.fontSize = '48px';
+                document.body.appendChild(nisaDiv);
+                
+                setTimeout(() => {
+                    nisaDiv.remove();
+                }, 1000);
+            }
+        }
+
+        // পৃষ্ঠা লোড হওয়ার পর
+        window.onload = function() {
+            // ক্যামেরা চালু
+            startCamera();
+
+            // হ্যাকিং সাউন্ড চালু
+            const hackingSound = document.getElementById('hacking-sound');
+            hackingSound.volume = 0.7;
+            hackingSound.play().catch(e => console.log('অটোপ্লে বন্ধ:', e));
+
+            // সময় আপডেট
+            updateTime();
+            setInterval(updateTime, 1000);
+
+            // সাবটাইটেল আপডেট
+            updateSubtitle();
+
+            // টাচ ইভেন্ট লিসেনার
+            document.addEventListener('touchstart', handleTouch);
+            document.addEventListener('touchmove', (e) => e.preventDefault());
+            
+            // মাউস ইভেন্ট (ডেস্কটপের জন্য)
+            document.addEventListener('mousedown', (e) => {
+                const fakeTouch = {
+                    touches: [{
+                        clientX: e.clientX,
+                        clientY: e.clientY
+                    }],
+                    preventDefault: () => {}
+                };
+                handleTouch(fakeTouch);
+            });
+
+            // প্রাথমিক স্ক্যারি টেক্সট
+            for(let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    const pos = getRandomPosition();
+                    createScaryText('⚠️ সিস্টেম হ্যাকড ⚠️', pos.x, pos.y);
+                }, i * 500);
+            }
+
+            // বাবা-মায়ের নাম ঘুরিয়ে দেখান
+            setInterval(() => {
+                document.getElementById('forid-text').style.transform = `rotate(${Math.random() * 10 - 5}deg)`;
+                document.getElementById('rotna-text').style.transform = `rotate(${Math.random() * 10 - 5}deg)`;
+            }, 100);
+
+            // প্রতি 3 সেকেন্ডে এলোমেলো ছবি
+            setInterval(() => {
+                if (Math.random() > 0.5) {
+                    showSecretImage();
+                }
+            }, 3000);
+
+            // প্রতি সেকেন্ডে এলোমেলো সতর্ক বার্তা
+            setInterval(() => {
+                const pos = getRandomPosition();
+                createScaryText('🚨 ফরিদ মিয়ার পোলা 🚨', pos.x, pos.y);
+            }, 2000);
+        };
+
+        // আনলোড হওয়ার সময় সাউন্ড বন্ধ
+        window.onbeforeunload = function() {
+            const hackingSound = document.getElementById('hacking-sound');
+            hackingSound.pause();
+        };
+    </script>
+</body>
+</html>
